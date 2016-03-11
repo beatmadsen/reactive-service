@@ -1,12 +1,18 @@
-package com.madsen.rx;
+package com.madsen.rx.first.controller;
 
+import com.madsen.rx.first.Cow;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 @RestController
-public class X {
+public class FirstController {
+
+    @Autowired
+    private Cow state;
+
 
     @RequestMapping("/process-non-blocking")
     public DeferredResult<Integer> nonBlockingProcessing(
