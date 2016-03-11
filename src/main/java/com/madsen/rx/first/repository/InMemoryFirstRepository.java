@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryFirstRepository implements FirstRepository {
 
-    private final Map<Integer, First> map = new ConcurrentHashMap<>();
+    private final Map<Long, First> map = new ConcurrentHashMap<>();
 
 
     @Override
@@ -27,26 +28,46 @@ public class InMemoryFirstRepository implements FirstRepository {
 
     @Override
     public Collection<First> findBy(final String name) {
-        return all().stream().filter(first -> first.isMatch(name)).collect(Collectors.toSet());
+        return query(first -> first.isMatch(name));
+    }
+
+
+    @Override
+    public Optional<First> findBy(final long id) {
+        return Optional.ofNullable(map.get(id));
+    }
+
+
+    @Override
+    public boolean contains(final First value) {
+        final Optional<Long> maybeKey = index(value);
+
+        return maybeKey.map(map::containsKey).orElse(false);
+    }
+
+
+    private static Optional<Long> index(final First value) {
+        return value.extract(state -> Optional.of(state.id));
     }
 
 
     @Override
     public void update(final First value) {
-        final int index = value.index();
-        map.put(index, value);
+
+        index(value).ifPresent(index -> map.put(index, value));
     }
 
 
     @Override
     public void add(final First value) {
-        map.putIfAbsent(value.index(), value);
+
+        index(value).ifPresent(index -> map.putIfAbsent(index, value));
     }
 
 
     @Override
     public void remove(final First value) {
-        map.remove(value.index());
+        index(value).ifPresent(map::remove);
     }
 
 

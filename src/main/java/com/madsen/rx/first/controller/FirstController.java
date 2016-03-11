@@ -1,6 +1,6 @@
 package com.madsen.rx.first.controller;
 
-import com.madsen.rx.first.Cow;
+import com.madsen.rx.first.service.FirstService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,8 +10,13 @@ import org.springframework.web.context.request.async.DeferredResult;
 @RestController
 public class FirstController {
 
+
+    private final FirstService service;
+
     @Autowired
-    private Cow state;
+    public FirstController(final FirstService service) {
+        this.service = service;
+    }
 
 
     @RequestMapping("/process-non-blocking")
