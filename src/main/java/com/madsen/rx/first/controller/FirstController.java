@@ -1,11 +1,18 @@
 package com.madsen.rx.first.controller;
 
+import com.madsen.rx.first.data.FirstDto;
+import com.madsen.rx.first.domain.First;
 import com.madsen.rx.first.service.FirstService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 public class FirstController {
@@ -34,34 +41,49 @@ public class FirstController {
         return deferredResult;
     }
 
+
+    @RequestMapping(value = "/first/", method = RequestMethod.GET)
+    public DeferredResult<Collection<FirstDto>> listAll() {
+
+        final DeferredResult<Collection<FirstDto>> result = new DeferredResult<>();
+
+        // TODO: thread pool
+        new Thread(() -> {
+
+            final Set<FirstDto> dtos = service.readAll().stream().map(value -> {
+                final Optional<FirstDto> mDto = value.extract(Optional::of);
+                return mDto.get();
+            }).collect(Collectors.toSet());
+
+            result.setResult(dtos);
+
+        }).start();
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/first/{id}", method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity<FirstDto>> getFirst(@PathVariable("id") final long id) {
+
+        final DeferredResult<ResponseEntity<FirstDto>> result = new DeferredResult<>();
+
+        // TODO: thread pool
+        new Thread(() -> {
+
+            final ResponseEntity<FirstDto> dto = service.read(id)
+                    .flatMap(value -> value.extract(Optional::of))
+                    .map(dto1 -> new ResponseEntity<>(dto1, HttpStatus.OK))
+                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+            result.setResult(dto);
+        }).start();
+
+        return result;
+    }
+
+
     /*
-
-    //-------------------Retrieve All Users--------------------------------------------------------
-
-    @RequestMapping(value = "/user/", method = RequestMethod.GET)
-    public ResponseEntity<List<User>> listAllUsers() {
-        List<User> users = userService.findAllUsers();
-        if(users.isEmpty()){
-            return new ResponseEntity<List<User>>(HttpStatus.NO_CONTENT);//You many decide to return HttpStatus.NOT_FOUND
-        }
-        return new ResponseEntity<List<User>>(users, HttpStatus.OK);
-    }
-
-
-    //-------------------Retrieve Single User--------------------------------------------------------
-
-    @RequestMapping(value = "/user/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> getUser(@PathVariable("id") long id) {
-        System.out.println("Fetching User with id " + id);
-        User user = userService.findById(id);
-        if (user == null) {
-            System.out.println("User with id " + id + " not found");
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<User>(user, HttpStatus.OK);
-    }
-
-
 
     //-------------------Create a User--------------------------------------------------------
 
