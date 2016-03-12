@@ -21,7 +21,7 @@ public interface CrudService<T> {
 
     void update(T value, ErrorHandler errorHandler);
 
-    void delete(T value, ErrorHandler errorHandler);
+    void delete(long id, ErrorHandler errorHandler);
 
     interface ErrorHandler {
         void onAbsentValue(String messsage);
