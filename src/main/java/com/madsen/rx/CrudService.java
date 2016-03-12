@@ -8,11 +8,24 @@ import java.util.Optional;
  */
 public interface CrudService<T> {
 
-    Collection<T> findAll();
+    /*
+    The service is responsible for the application logic,
+    the controller is responsible for adapting and routing the data.
+     */
 
-    Optional<T> find(long id);
+    Collection<T> readAll();
 
-    void save(T value);
+    Optional<T> read(long id);
 
-    void delete(T value);
+    void create(T value, ErrorHandler errorHandler);
+
+    void update(T value, ErrorHandler errorHandler);
+
+    void delete(T value, ErrorHandler errorHandler);
+
+    interface ErrorHandler {
+        void onAbsentValue(String messsage);
+
+        void onPresentValue(String messsage);
+    }
 }

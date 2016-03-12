@@ -1,5 +1,6 @@
 package com.madsen.rx.first.service;
 
+import com.madsen.rx.CrudService;
 import com.madsen.rx.first.domain.First;
 import com.madsen.rx.first.repository.FirstRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,25 +24,56 @@ public class FirstServiceImpl implements FirstService {
         this.repository = repository;
     }
 
+//
+//    @Override
+//    public Collection<First> findAll() {
+//        return repository.all();
+//    }
+//
+//
+//    @Override
+//    public Optional<First> find(final long id) {
+//        return repository.query(first -> first.isMatch(id)).stream().findFirst();
+//    }
+//
+//
+//    @Override
+//    public void save(final First value) {
+//
+//        // TODO: atomic
+//        if (repository.contains(value)) {
+//            repository.update(value);
+//        } else {
+//            repository.add(value);
+//        }
+//    }
+//
+//
+//    @Override
+//    public void delete(final First value) {
+//
+//        repository.remove(value);
+//    }
+
 
     @Override
-    public Collection<First> findAll() {
+    public Collection<First> readAll() {
         return repository.all();
     }
 
 
     @Override
-    public Optional<First> find(final long id) {
-        return repository.query(first -> first.isMatch(id)).stream().findFirst();
+    public Optional<First> read(final long id) {
+        return repository.findBy(id);
     }
 
 
     @Override
-    public void save(final First value) {
+    public void create(final First value, final ErrorHandler errorHandler) {
 
-        // TODO: atomic
-        if (repository.contains(value)) {
-            repository.update(value);
+        // TODO: Atomic
+        if (repository.contains(value)){
+            errorHandler.onPresentValue("Value already exists");
         } else {
             repository.add(value);
         }
@@ -49,8 +81,13 @@ public class FirstServiceImpl implements FirstService {
 
 
     @Override
-    public void delete(final First value) {
+    public void update(final First value, final ErrorHandler errorHandler) {
 
-        repository.remove(value);
+    }
+
+
+    @Override
+    public void delete(final First value, final ErrorHandler errorHandler) {
+
     }
 }

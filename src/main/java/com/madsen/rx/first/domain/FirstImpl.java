@@ -40,4 +40,16 @@ public class FirstImpl implements First {
     public <T> Optional<T> extract(final Function<FirstDto, Optional<T>> strategy) {
         return strategy.apply(dto);
     }
+
+
+    @Override
+    public int hashCode() {
+        return dto.hashCode();
+    }
+
+
+    @Override
+    public boolean equals(final Object obj) {
+        return obj instanceof First && ((First) obj).isMatch(dto);
+    }
 }
