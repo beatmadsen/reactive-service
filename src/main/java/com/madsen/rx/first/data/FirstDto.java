@@ -8,6 +8,12 @@ public class FirstDto {
     public final long id;
     public final String name;
 
+    // for jackson
+    private FirstDto(){
+        id = 0;
+        name = null;
+    }
+
 
     public FirstDto(final long id, final String name) {
         this.id = id;

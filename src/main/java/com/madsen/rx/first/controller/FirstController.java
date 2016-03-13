@@ -1,13 +1,16 @@
 package com.madsen.rx.first.controller;
 
+import com.madsen.rx.CrudService;
 import com.madsen.rx.first.data.FirstDto;
-import com.madsen.rx.first.domain.First;
+import com.madsen.rx.first.domain.FirstImpl;
 import com.madsen.rx.first.service.FirstService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -17,8 +20,8 @@ import java.util.stream.Collectors;
 @RestController
 public class FirstController {
 
-
     private final FirstService service;
+
 
     @Autowired
     public FirstController(final FirstService service) {
@@ -56,7 +59,6 @@ public class FirstController {
             }).collect(Collectors.toSet());
 
             result.setResult(dtos);
-
         }).start();
 
         return result;
@@ -71,10 +73,12 @@ public class FirstController {
         // TODO: thread pool
         new Thread(() -> {
 
-            final ResponseEntity<FirstDto> dto = service.read(id)
-                    .flatMap(value -> value.extract(Optional::of))
-                    .map(dto1 -> new ResponseEntity<>(dto1, HttpStatus.OK))
-                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            final ResponseEntity<FirstDto>
+                    dto =
+                    service.read(id)
+                            .flatMap(value -> value.extract(Optional::of))
+                            .map(dto1 -> new ResponseEntity<>(dto1, HttpStatus.OK))
+                            .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
             result.setResult(dto);
         }).start();
@@ -82,6 +86,45 @@ public class FirstController {
         return result;
     }
 
+
+    @RequestMapping(value = "/first/", method = RequestMethod.POST)
+    public DeferredResult<ResponseEntity<Void>> createNew(
+            @RequestBody final FirstDto dto, final UriComponentsBuilder builder
+    ) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+
+        // TODO: thread pool
+        new Thread(() -> {
+
+            service.create(new FirstImpl(dto), new CrudService.ErrorHandler() {
+                @Override
+                public void onAbsentValue(final String messsage) {
+
+                }
+
+
+                @Override
+                public void onPresentValue(final String messsage) {
+                    throw new CreateConflict(); // TODO: This doesn't work yet.
+                }
+            });
+
+            final HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(builder.path("/user/{id}").buildAndExpand(dto.id).toUri());
+
+            final ResponseEntity<Void> entity = new ResponseEntity<>(headers, HttpStatus.CREATED);
+
+            result.setResult(entity);
+        }).start();
+
+        return result;
+    }
+
+
+    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "Data integrity violation")
+    public class CreateConflict extends RuntimeException {
+    }
 
     /*
 
