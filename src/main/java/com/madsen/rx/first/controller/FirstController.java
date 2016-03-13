@@ -46,7 +46,7 @@ public class FirstController {
 
 
     @RequestMapping(value = "/first/", method = RequestMethod.GET)
-    public DeferredResult<Collection<FirstDto>> listAll() {
+    public DeferredResult<Collection<FirstDto>> getAll() {
 
         final DeferredResult<Collection<FirstDto>> result = new DeferredResult<>();
 
@@ -66,19 +66,17 @@ public class FirstController {
 
 
     @RequestMapping(value = "/first/{id}", method = RequestMethod.GET)
-    public DeferredResult<ResponseEntity<FirstDto>> getFirst(@PathVariable("id") final long id) {
+    public DeferredResult<ResponseEntity<FirstDto>> getSingle(@PathVariable("id") final long id) {
 
         final DeferredResult<ResponseEntity<FirstDto>> result = new DeferredResult<>();
 
         // TODO: thread pool
         new Thread(() -> {
 
-            final ResponseEntity<FirstDto>
-                    dto =
-                    service.read(id)
-                            .flatMap(value -> value.extract(Optional::of))
-                            .map(dto1 -> new ResponseEntity<>(dto1, HttpStatus.OK))
-                            .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            final ResponseEntity<FirstDto> dto = service.read(id)
+                    .flatMap(value -> value.extract(Optional::of))
+                    .map(dto1 -> new ResponseEntity<>(dto1, HttpStatus.OK))
+                    .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
             result.setResult(dto);
         }).start();
@@ -88,13 +86,13 @@ public class FirstController {
 
 
     @RequestMapping(value = "/first/", method = RequestMethod.POST)
-    public DeferredResult<ResponseEntity<Void>> createNew(
+    public DeferredResult<ResponseEntity<Void>> postNew(
             @RequestBody final FirstDto dto, final UriComponentsBuilder builder
     ) {
 
         final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-        final CrudService.OutcomeHandler<ResponseEntity<Void>>
-                outcomeHandler =
+
+        final CrudService.OutcomeHandler<ResponseEntity<Void>> outcomeHandler =
                 new CrudService.OutcomeHandler<ResponseEntity<Void>>() {
 
                     @Override
@@ -130,77 +128,70 @@ public class FirstController {
     }
 
 
-    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "Data integrity violation")
-    public class CreateConflict extends RuntimeException {
-    }
-
-    /*
-
-    //-------------------Create a User--------------------------------------------------------
-
-    @RequestMapping(value = "/user/", method = RequestMethod.POST)
-    public ResponseEntity<Void> createUser(@RequestBody User user,    UriComponentsBuilder ucBuilder) {
-        System.out.println("Creating User " + user.getName());
-
-        if (userService.isUserExist(user)) {
-            System.out.println("A User with name " + user.getName() + " already exist");
-            return new ResponseEntity<Void>(HttpStatus.CONFLICT);
-        }
-
-        userService.saveUser(user);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(ucBuilder.path("/user/{id}").buildAndExpand(user.getId()).toUri());
-        return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
-    }
-
-
-    //------------------- Update a User --------------------------------------------------------
-
-    @RequestMapping(value = "/user/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<User> updateUser(@PathVariable("id") long id, @RequestBody User user) {
-        System.out.println("Updating User " + id);
-
-        User currentUser = userService.findById(id);
-
-        if (currentUser==null) {
-            System.out.println("User with id " + id + " not found");
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-        }
-
-        currentUser.setName(user.getName());
-        currentUser.setAge(user.getAge());
-        currentUser.setSalary(user.getSalary());
-
-        userService.updateUser(currentUser);
-        return new ResponseEntity<User>(currentUser, HttpStatus.OK);
-    }
-
-    //------------------- Delete a User --------------------------------------------------------
-
-    @RequestMapping(value = "/user/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<User> deleteUser(@PathVariable("id") long id) {
-        System.out.println("Fetching & Deleting User with id " + id);
-
-        User user = userService.findById(id);
-        if (user == null) {
-            System.out.println("Unable to delete. User with id " + id + " not found");
-            return new ResponseEntity<User>(HttpStatus.NOT_FOUND);
-        }
-
-        userService.deleteUserById(id);
-        return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
-    }
-
-
-    //------------------- Delete All Users --------------------------------------------------------
-
-    @RequestMapping(value = "/user/", method = RequestMethod.DELETE)
-    public ResponseEntity<User> deleteAllUsers() {
-        System.out.println("Deleting All Users");
-
-        userService.deleteAllUsers();
-        return new ResponseEntity<User>(HttpStatus.NO_CONTENT);
-    }
+    /**
+     * An outcome handler that can be used for update and delete operations.
+     * <p/>
+     * Returns status 204: NO_CONTENT on success
+     * and 404: NOT_FOUND, when nothing is found to update/delete.
      */
+    private class UpdateOutcomeHandler implements CrudService.OutcomeHandler<ResponseEntity<Void>> {
+
+        @Override
+        public ResponseEntity<Void> onAbsentValue(final String messsage) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onPresentValue(final String messsage) {
+            return null;
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onSuccess() {
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
+
+
+    @RequestMapping(value = "/first/{id}", method = RequestMethod.PATCH)
+    public DeferredResult<ResponseEntity<Void>> patch(
+            @PathVariable final long id, @RequestBody final FirstDto dto
+    ) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+
+        // TODO: thread pool
+        new Thread(() -> {
+
+            if (id != dto.id) {
+                result.setResult(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+                return;
+            }
+
+            final ResponseEntity<Void> responseEntity = service.update(new FirstImpl(dto), new UpdateOutcomeHandler());
+            result.setResult(responseEntity);
+        }).start();
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/first/{id}", method = RequestMethod.DELETE)
+    public DeferredResult<ResponseEntity<Void>> delete(@PathVariable final long id) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+
+        // TODO: thread pool
+        new Thread(() -> {
+
+            final ResponseEntity<Void> responseEntity = service.delete(id, new UpdateOutcomeHandler());
+            result.setResult(responseEntity);
+        }).start();
+
+        return result;
+    }
+
 }
