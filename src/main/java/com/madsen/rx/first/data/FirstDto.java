@@ -11,7 +11,7 @@ public class FirstDto {
     // for jackson
     private FirstDto(){
         id = 0;
-        name = null;
+        name = "";
     }
 
 
