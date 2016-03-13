@@ -93,29 +93,37 @@ public class FirstController {
     ) {
 
         final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+        final CrudService.OutcomeHandler<ResponseEntity<Void>>
+                outcomeHandler =
+                new CrudService.OutcomeHandler<ResponseEntity<Void>>() {
+
+                    @Override
+                    public ResponseEntity<Void> onAbsentValue(final String messsage) {
+                        return null;
+                    }
+
+
+                    @Override
+                    public ResponseEntity<Void> onPresentValue(final String messsage) {
+                        return new ResponseEntity<>(HttpStatus.CONFLICT);
+                    }
+
+
+                    @Override
+                    public ResponseEntity<Void> onSuccess() {
+
+                        final HttpHeaders headers = new HttpHeaders();
+                        headers.setLocation(builder.path("/user/{id}").buildAndExpand(dto.id).toUri());
+
+                        return new ResponseEntity<>(headers, HttpStatus.CREATED);
+                    }
+                };
 
         // TODO: thread pool
         new Thread(() -> {
+            final ResponseEntity<Void> responseEntity = service.create(new FirstImpl(dto), outcomeHandler);
 
-            service.create(new FirstImpl(dto), new CrudService.ErrorHandler() {
-                @Override
-                public void onAbsentValue(final String messsage) {
-
-                }
-
-
-                @Override
-                public void onPresentValue(final String messsage) {
-                    throw new CreateConflict(); // TODO: This doesn't work yet.
-                }
-            });
-
-            final HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(builder.path("/user/{id}").buildAndExpand(dto.id).toUri());
-
-            final ResponseEntity<Void> entity = new ResponseEntity<>(headers, HttpStatus.CREATED);
-
-            result.setResult(entity);
+            result.setResult(responseEntity);
         }).start();
 
         return result;

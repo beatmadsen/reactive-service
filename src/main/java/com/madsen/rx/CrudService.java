@@ -17,15 +17,17 @@ public interface CrudService<T> {
 
     Optional<T> read(long id);
 
-    void create(T value, ErrorHandler errorHandler);
+    <S> S create(T value, OutcomeHandler<S> outcomeHandler);
 
-    void update(T value, ErrorHandler errorHandler);
+    <S> S update(T value, OutcomeHandler<S> outcomeHandler);
 
-    void delete(long id, ErrorHandler errorHandler);
+    <S> S delete(long id, OutcomeHandler<S> outcomeHandler);
 
-    interface ErrorHandler {
-        void onAbsentValue(String messsage);
+    interface OutcomeHandler<S> {
+        S onAbsentValue(String messsage);
 
-        void onPresentValue(String messsage);
+        S onPresentValue(String messsage);
+
+        S onSuccess();
     }
 }
