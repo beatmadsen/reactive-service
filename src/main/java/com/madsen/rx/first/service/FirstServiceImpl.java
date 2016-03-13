@@ -23,38 +23,6 @@ public class FirstServiceImpl implements FirstService {
         this.repository = repository;
     }
 
-    //
-    //    @Override
-    //    public Collection<First> findAll() {
-    //        return repository.all();
-    //    }
-    //
-    //
-    //    @Override
-    //    public Optional<First> find(final long id) {
-    //        return repository.query(first -> first.isMatch(id)).stream().findFirst();
-    //    }
-    //
-    //
-    //    @Override
-    //    public void save(final First value) {
-    //
-    //        // TODO: atomic
-    //        if (repository.contains(value)) {
-    //            repository.update(value);
-    //        } else {
-    //            repository.add(value);
-    //        }
-    //    }
-    //
-    //
-    //    @Override
-    //    public void delete(final First value) {
-    //
-    //        repository.remove(value);
-    //    }
-
-
     @Override
     public Collection<First> readAll() {
         return repository.all();

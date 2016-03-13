@@ -1,6 +1,7 @@
 package com.madsen.rx.second.service;
 
 import com.madsen.rx.second.domain.Second;
+import com.madsen.rx.second.repository.SecondRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +15,13 @@ import java.util.Optional;
 public class SecondServiceImpl implements SecondService {
 
     private final IdService idService;
+    private final SecondRepository repository;
 
     @Autowired
-    public SecondServiceImpl(final IdService idService) {
+    public SecondServiceImpl(final IdService idService, final SecondRepository repository) {
 
         this.idService = idService;
+        this.repository = repository;
     }
 
 
