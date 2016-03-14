@@ -48,10 +48,9 @@ public class InMemorySecondRepository implements SecondRepository {
 
 
     @Override
-    public boolean removeIfPresent(final Second value) {
+    public boolean removeIfPresent(final long id) {
 
-        final Long key = extractId(value);
-        return map.remove(key) != null;
+        return map.remove(id) != null;
     }
 
 

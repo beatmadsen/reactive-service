@@ -12,12 +12,14 @@ public class SecondImpl implements Second {
 
 
     public SecondImpl(final SecondVo vo) {
+
         this.vo = vo;
     }
 
 
     @Override
     public boolean idMatches(final long id) {
+
         return vo.id == id;
     }
 
@@ -38,7 +40,16 @@ public class SecondImpl implements Second {
 
     @Override
     public <T> Optional<T> extract(final Function<SecondVo, Optional<T>> strategy) {
+
         return strategy.apply(vo);
+    }
+
+
+    @Override
+    public Second copyWithId(final long id) {
+
+        final SecondVo newVo = new SecondVo(id, vo.name, vo.address);
+        return new SecondImpl(newVo);
     }
 
 
@@ -57,6 +68,7 @@ public class SecondImpl implements Second {
 
 
     private boolean equals(final Second second) {
+
         return second.extract(vo -> Optional.of(this.vo.equals(vo))).orElse(false);
     }
 }

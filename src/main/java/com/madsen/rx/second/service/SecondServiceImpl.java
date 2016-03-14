@@ -17,6 +17,7 @@ public class SecondServiceImpl implements SecondService {
     private final IdService idService;
     private final SecondRepository repository;
 
+
     @Autowired
     public SecondServiceImpl(final IdService idService, final SecondRepository repository) {
 
@@ -28,34 +29,52 @@ public class SecondServiceImpl implements SecondService {
     @Override
     public Collection<Second> readAll() {
 
-        return null;
+        return repository.all();
     }
 
 
     @Override
     public Optional<Second> read(final long id) {
 
-        return null;
+        return repository.find(id);
     }
 
 
     @Override
     public <S> S create(final Second value, final OutcomeHandler<S> outcomeHandler) {
 
-        return null;
+        final Second updated = value.copyWithId(idService.nextAvailableId());
+
+        final boolean success = repository.addIfAbsent(updated);
+        if (!success) {
+            /*
+             We do not follow normal failure procedure here because
+             this scenario should not occur when we have acquired a new id.
+             */
+            throw new RuntimeException("An unexpected ID collision occurred");
+        }
+        return outcomeHandler.onSuccess();
     }
 
 
     @Override
     public <S> S update(final Second value, final OutcomeHandler<S> outcomeHandler) {
 
-        return null;
+        final boolean success = repository.updateIfPresent(value);
+        if (success){
+            return outcomeHandler.onSuccess();
+        }
+        return outcomeHandler.onAbsentValue("Did not find value to update in store");
     }
 
 
     @Override
     public <S> S delete(final long id, final OutcomeHandler<S> outcomeHandler) {
 
-        return null;
+        final boolean success = repository.removeIfPresent(id);
+        if (success){
+            return outcomeHandler.onSuccess();
+        }
+        return outcomeHandler.onAbsentValue("Nothing to delete!");
     }
 }

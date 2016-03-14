@@ -8,6 +8,13 @@ import com.madsen.rx.second.domain.Second;
  */
 public interface SecondService extends CrudService<Second> {
 
-
-
+    /**
+     * Assign a new id and store domain object
+     * @param value an instance of the domain object with a provisional ID
+     * @param outcomeHandler strategy for handling possible outcomes
+     * @param <S> type of outcome output
+     * @return succesful or failed output from outcome handler
+     */
+    @Override
+    <S> S create(Second value, OutcomeHandler<S> outcomeHandler);
 }

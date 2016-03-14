@@ -16,6 +16,8 @@ public interface Second {
 
     <T> Optional<T> extract(Function<SecondVo, Optional<T>> strategy);
 
+    Second copyWithId(long id);
+
     class SecondVo {
         public final long id;
         public final String name;

@@ -12,7 +12,7 @@ public interface RestRepository<T> {
 
     boolean updateIfPresent(T value);
 
-    boolean removeIfPresent(T value);
+    boolean removeIfPresent(long id);
 
     Optional<T> find(long id);
 
