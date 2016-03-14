@@ -1,4 +1,4 @@
-package com.madsen.rx;
+package com.madsen.rx.first;
 
 import java.util.Collection;
 import java.util.function.Predicate;

@@ -1,6 +1,6 @@
 package com.madsen.rx.first.repository;
 
-import com.madsen.rx.Repository;
+import com.madsen.rx.first.Repository;
 import com.madsen.rx.first.domain.First;
 
 import java.util.Collection;
