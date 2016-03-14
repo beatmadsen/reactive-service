@@ -4,17 +4,14 @@ import com.madsen.rx.second.domain.Second;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
 /**
  * Created by erikmadsen2 on 14/03/2016.
  */
 @Repository
 public class InMemorySecondRepository implements SecondRepository {
-
 
     // TODO:
     /*
@@ -24,51 +21,50 @@ public class InMemorySecondRepository implements SecondRepository {
      */
 
 
-    private final Map<Long, Second> map = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Second> map = new ConcurrentHashMap<>();
 
 
     @Override
-    public Collection<Second> all() {
-        return map.values();
+    public boolean addIfAbsent(final Second value) {
+
+        final Long key = extractId(value);
+        return map.putIfAbsent(key, value) == null;
+    }
+
+
+    private Long extractId(final Second value) {
+
+        return value.extract(secondVo -> Optional.of(secondVo.id))
+                .orElseThrow(() -> new RuntimeException("Expected an id available"));
     }
 
 
     @Override
-    public Optional<Second> findBy(final long id) {
+    public boolean updateIfPresent(final Second value) {
+
+        final Long key = extractId(value);
+        return map.replace(key, value) != null;
+    }
+
+
+    @Override
+    public boolean removeIfPresent(final Second value) {
+
+        final Long key = extractId(value);
+        return map.remove(key) != null;
+    }
+
+
+    @Override
+    public Optional<Second> find(final long id) {
+
         return Optional.ofNullable(map.get(id));
     }
 
 
     @Override
-    public void update(final Second value) {
-        insert(value);
-    }
+    public Collection<Second> all() {
 
-
-    private void insert(final Second value) {
-        extractId(value).map(key -> map.put(key, value));
-    }
-
-
-    private Optional<Long> extractId(final Second value) {
-        return value.extract(secondVo -> Optional.of(secondVo.id));
-    }
-
-
-    @Override
-    public void add(final Second value) {
-        insert(value);
-    }
-
-
-    @Override
-    public void remove(final Second value) {
-        extractId(value).map(map::remove);
-    }
-
-
-    @Override
-    public Collection<Second> query(final Predicate<Second> predicate) {
-        return null;
+        return map.values();
     }
 }
