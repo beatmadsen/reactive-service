@@ -1,7 +1,5 @@
 package com.madsen.rx.second.domain;
 
-import com.madsen.rx.second.data.SecondDto;
-
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -10,53 +8,55 @@ import java.util.function.Function;
  */
 public class SecondImpl implements Second {
 
-    private final SecondDto dto;
+    private final SecondVo vo;
 
 
-    public SecondImpl(final SecondDto dto) {
-
-        this.dto = dto;
+    public SecondImpl(final SecondVo vo) {
+        this.vo = vo;
     }
 
 
     @Override
-    public boolean dtoMatches(final SecondDto dto) {
-
-        return this.dto.equals(dto);
+    public boolean idMatches(final long id) {
+        return vo.id == id;
     }
 
 
     @Override
     public boolean nameMatches(final String name) {
 
-        return dto.name.equals(name);
+        return vo.name.equals(name);
     }
 
 
     @Override
     public boolean addressMatches(final String address) {
 
-        return dto.address.equals(address);
+        return vo.address.equals(address);
     }
 
 
     @Override
-    public <T> Optional<T> extract(final Function<SecondDto, Optional<T>> strategy) {
-
-        return strategy.apply(dto);
+    public <T> Optional<T> extract(final Function<SecondVo, Optional<T>> strategy) {
+        return strategy.apply(vo);
     }
 
 
     @Override
     public int hashCode() {
 
-        return dto.hashCode();
+        return vo.hashCode();
     }
 
 
     @Override
     public boolean equals(final Object obj) {
 
-        return (obj instanceof Second) && ((Second) obj).dtoMatches(dto);
+        return (obj instanceof Second) && equals((Second) obj);
+    }
+
+
+    private boolean equals(final Second second) {
+        return second.extract(vo -> Optional.of(this.vo.equals(vo))).orElse(false);
     }
 }

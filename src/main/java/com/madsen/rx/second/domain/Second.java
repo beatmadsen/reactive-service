@@ -1,7 +1,5 @@
 package com.madsen.rx.second.domain;
 
-import com.madsen.rx.second.data.SecondDto;
-
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -10,11 +8,43 @@ import java.util.function.Function;
  */
 public interface Second {
 
-    boolean dtoMatches(SecondDto dto);
+    boolean idMatches(long id);
 
     boolean nameMatches(String name);
 
     boolean addressMatches(String address);
 
-    <T> Optional<T> extract(Function<SecondDto, Optional<T>> strategy);
+    <T> Optional<T> extract(Function<SecondVo, Optional<T>> strategy);
+
+    class SecondVo {
+        public final long id;
+        public final String name;
+        public final String address;
+
+
+        public SecondVo(final long id, final String name, final String address) {
+            this.id = id;
+            this.name = name;
+            this.address = address;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Long.hashCode(id);
+        }
+
+
+        @Override
+        public boolean equals(final Object obj) {
+            return obj instanceof SecondVo && equals((SecondVo) obj);
+        }
+
+
+        private boolean equals(final SecondVo vo) {
+            return id == vo.id &&
+                    name.equals(vo.name) &&
+                    address.equals(vo.address);
+        }
+    }
 }
