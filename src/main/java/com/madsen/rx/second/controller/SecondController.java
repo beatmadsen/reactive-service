@@ -114,7 +114,7 @@ public class SecondController {
                     long id = value.extract(vo -> Optional.of(vo.id)).get();
 
                     final HttpHeaders headers = new HttpHeaders();
-                    headers.setLocation(builder.path("/user/{id}").buildAndExpand(id).toUri());
+                    headers.setLocation(builder.path("/second/{id}").buildAndExpand(id).toUri());
                     return new ResponseEntity<>(headers, HttpStatus.CREATED);
                 }
             });
