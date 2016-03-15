@@ -119,13 +119,13 @@ public class SecondController {
                 }
             });
             result.setResult(entity);
-        })
+        });
 
         return result;
     }
 
 
-    @RequestMapping(value = "/first/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/second/{id}", method = RequestMethod.PATCH)
     public DeferredResult<ResponseEntity<Void>> patch(
             @PathVariable final long id, @RequestBody final SecondDto dto
     ) {
@@ -141,7 +141,7 @@ public class SecondController {
     }
 
 
-    @RequestMapping(value = "/first/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/second/{id}", method = RequestMethod.DELETE)
     public DeferredResult<ResponseEntity<Void>> delete(@PathVariable final long id) {
 
         final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
