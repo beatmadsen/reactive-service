@@ -16,5 +16,5 @@ public interface SecondService extends CrudService<Second> {
      * @return succesful or failed output from outcome handler
      */
     @Override
-    <S> S create(Second value, OutcomeHandler<S> outcomeHandler);
+    <S> S create(Second value, OutcomeHandler<S, Second> outcomeHandler);
 }

@@ -36,38 +36,38 @@ public class FirstServiceImpl implements FirstService {
 
 
     @Override
-    public <S> S create(final First value, final OutcomeHandler<S> outcomeHandler) {
+    public <S> S create(final First value, final OutcomeHandler<S, First> outcomeHandler) {
 
         // TODO: Atomic
         if (repository.contains(value)) {
-            return outcomeHandler.onPresentValue("Value already exists");
+            return outcomeHandler.onPresentValue(value, "Value already exists");
         }
 
         repository.add(value);
-        return outcomeHandler.onSuccess();
+        return outcomeHandler.onSuccess(value);
     }
 
 
     @Override
-    public <S> S update(final First value, final OutcomeHandler<S> outcomeHandler) {
+    public <S> S update(final First value, final OutcomeHandler<S, First> outcomeHandler) {
 
         // TODO: Atomic
         if (!repository.contains(value)) {
-            return outcomeHandler.onAbsentValue("No existing value to update");
+            return outcomeHandler.onAbsentValue(value, "No existing value to update");
         }
 
         repository.update(value);
-        return outcomeHandler.onSuccess();
+        return outcomeHandler.onSuccess(value);
     }
 
 
     @Override
-    public <S> S delete(final long id, final OutcomeHandler<S> outcomeHandler) {
+    public <S> S delete(final long id, final OutcomeHandler<S, First> outcomeHandler) {
 
         // TODO: Atomic
         return repository.findBy(id).map(value -> {
             repository.remove(value);
-            return outcomeHandler.onSuccess();
-        }).orElseGet(() -> outcomeHandler.onAbsentValue("No existing value to remove"));
+            return outcomeHandler.onSuccess(value);
+        }).orElseGet(() -> outcomeHandler.onAbsentValue(null, "No existing value to remove"));
     }
 }

@@ -1,16 +1,17 @@
 package com.madsen.rx.second.controller;
 
+import com.madsen.rx.CrudService;
 import com.madsen.rx.second.data.SecondDto;
 import com.madsen.rx.second.domain.Second;
+import com.madsen.rx.second.domain.SecondImpl;
 import com.madsen.rx.second.service.SecondService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -78,6 +79,47 @@ public class SecondController {
 
             result.setResult(entity);
         });
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/second/", method = RequestMethod.POST)
+    public DeferredResult<ResponseEntity<Void>> postNew(
+            @RequestBody final SecondDto dto,
+            final UriComponentsBuilder builder
+    ) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+        executorService.submit(() -> {
+            final Second s = new SecondImpl(new Second.SecondVo(-1, dto.name, dto.address));
+            final ResponseEntity<Void> entity = service.create(s, new CrudService.OutcomeHandler<ResponseEntity<Void>, Second>() {
+                @Override
+                public ResponseEntity<Void> onAbsentValue(final Second value, final String messsage) {
+
+                    return null;
+                }
+
+
+                @Override
+                public ResponseEntity<Void> onPresentValue(final Second value, final String messsage) {
+
+                    return null;
+                }
+
+
+                @Override
+                public ResponseEntity<Void> onSuccess(final Second value) {
+
+                    long id = value.extract(vo -> Optional.of(vo.id)).get();
+
+                    final HttpHeaders headers = new HttpHeaders();
+                    headers.setLocation(builder.path("/user/{id}").buildAndExpand(id).toUri());
+                    return new ResponseEntity<>(headers, HttpStatus.CREATED);
+                }
+            });
+            result.setResult(entity);
+        })
 
         return result;
     }

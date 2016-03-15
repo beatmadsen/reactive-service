@@ -2,6 +2,7 @@ package com.madsen.rx.first.controller;
 
 import com.madsen.rx.CrudService;
 import com.madsen.rx.first.data.FirstDto;
+import com.madsen.rx.first.domain.First;
 import com.madsen.rx.first.domain.FirstImpl;
 import com.madsen.rx.first.service.FirstService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ public class FirstController {
 
     @Autowired
     public FirstController(final FirstService service) {
+
         this.service = service;
     }
 
@@ -92,23 +94,25 @@ public class FirstController {
 
         final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 
-        final CrudService.OutcomeHandler<ResponseEntity<Void>> outcomeHandler =
-                new CrudService.OutcomeHandler<ResponseEntity<Void>>() {
+        final CrudService.OutcomeHandler<ResponseEntity<Void>, First> outcomeHandler =
+                new CrudService.OutcomeHandler<ResponseEntity<Void>, First>() {
 
                     @Override
-                    public ResponseEntity<Void> onAbsentValue(final String messsage) {
-                        return null;
-                    }
+                    public ResponseEntity<Void> onAbsentValue(final First value, final String messsage) {
 
-
-                    @Override
-                    public ResponseEntity<Void> onPresentValue(final String messsage) {
                         return new ResponseEntity<>(HttpStatus.CONFLICT);
                     }
 
 
                     @Override
-                    public ResponseEntity<Void> onSuccess() {
+                    public ResponseEntity<Void> onPresentValue(final First value, final String messsage) {
+
+                        return null;
+                    }
+
+
+                    @Override
+                    public ResponseEntity<Void> onSuccess(final First value) {
 
                         final HttpHeaders headers = new HttpHeaders();
                         headers.setLocation(builder.path("/user/{id}").buildAndExpand(dto.id).toUri());
@@ -125,34 +129,6 @@ public class FirstController {
         }).start();
 
         return result;
-    }
-
-
-    /**
-     * An outcome handler that can be used for update and delete operations.
-     * <p/>
-     * Returns status 204: NO_CONTENT on success
-     * and 404: NOT_FOUND, when nothing is found to update/delete.
-     */
-    private class UpdateOutcomeHandler implements CrudService.OutcomeHandler<ResponseEntity<Void>> {
-
-        @Override
-        public ResponseEntity<Void> onAbsentValue(final String messsage) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-
-        @Override
-        public ResponseEntity<Void> onPresentValue(final String messsage) {
-            return null;
-        }
-
-
-        @Override
-        public ResponseEntity<Void> onSuccess() {
-
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
     }
 
 
@@ -194,4 +170,34 @@ public class FirstController {
         return result;
     }
 
+
+
+    /**
+     * An outcome handler that can be used for update and delete operations.
+     * <p/>
+     * Returns status 204: NO_CONTENT on success
+     * and 404: NOT_FOUND, when nothing is found to update/delete.
+     */
+    private class UpdateOutcomeHandler implements CrudService.OutcomeHandler<ResponseEntity<Void>, First> {
+
+        @Override
+        public ResponseEntity<Void> onAbsentValue(final First value, final String messsage) {
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onPresentValue(final First value, final String messsage) {
+
+            return null;
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onSuccess(final First value) {
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
 }
