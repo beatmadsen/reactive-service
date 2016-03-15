@@ -123,4 +123,59 @@ public class SecondController {
 
         return result;
     }
+
+
+    @RequestMapping(value = "/first/{id}", method = RequestMethod.PATCH)
+    public DeferredResult<ResponseEntity<Void>> patch(
+            @PathVariable final long id, @RequestBody final SecondDto dto
+    ) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+        executorService.submit(() -> {
+            final Second s = new SecondImpl(new Second.SecondVo(id, dto.name, dto.address));
+            final ResponseEntity<Void> entity = service.update(s, new UpdateOutcomeHandler());
+            result.setResult(entity);
+        });
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/first/{id}", method = RequestMethod.DELETE)
+    public DeferredResult<ResponseEntity<Void>> delete(@PathVariable final long id) {
+
+        final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
+        executorService.submit(() -> {
+            final ResponseEntity<Void> entity = service.delete(id, new UpdateOutcomeHandler() {
+
+            });
+            result.setResult(entity);
+        });
+
+        return result;
+    }
+
+
+    private class UpdateOutcomeHandler implements CrudService.OutcomeHandler<ResponseEntity<Void>, Second> {
+
+        @Override
+        public ResponseEntity<Void> onAbsentValue(final Second value, final String messsage) {
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onPresentValue(final Second value, final String messsage) {
+
+            return null;
+        }
+
+
+        @Override
+        public ResponseEntity<Void> onSuccess(final Second value) {
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
 }
