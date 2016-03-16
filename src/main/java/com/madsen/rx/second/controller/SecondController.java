@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 public class SecondController {
 
+    public static final int DUMMY_ID = -1;
     private final SecondService service;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
@@ -92,8 +93,10 @@ public class SecondController {
 
         final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
         executorService.submit(() -> {
-            final Second s = new SecondImpl(new Second.SecondVo(-1, dto.name, dto.address));
-            final ResponseEntity<Void> entity = service.create(s, new CrudService.OutcomeHandler<ResponseEntity<Void>, Second>() {
+            final Second exId = new SecondImpl(new Second.SecondVo(DUMMY_ID, dto.name, dto.address));
+            final ResponseEntity<Void> entity = service.create(
+                    exId,
+                    new CrudService.OutcomeHandler<ResponseEntity<Void>, Second>() {
                 @Override
                 public ResponseEntity<Void> onAbsentValue(final Second value, final String messsage) {
 
