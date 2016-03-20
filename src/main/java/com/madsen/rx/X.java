@@ -14,5 +14,4 @@ public class X {
 
         S createFrom(Iterable<Step<T>> steps);
     }
-
 }
